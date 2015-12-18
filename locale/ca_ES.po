@@ -1,0 +1,39 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:contract.line:"
+msgid "Product %s of kit has not any service related."
+msgstr "El producte %s del kit no té cap servei relacionat."
+
+msgctxt "field:contract.line,kit_child_lines:"
+msgid "Lines in the kit"
+msgstr "Línies del kit"
+
+msgctxt "field:contract.line,kit_depth:"
+msgid "Depth"
+msgstr "Profunditat"
+
+msgctxt "field:contract.line,kit_parent_line:"
+msgid "Parent Kit Line"
+msgstr "Pare de la línia del kit."
+
+msgctxt "field:contract.line,product:"
+msgid "Product"
+msgstr "Producte"
+
+msgctxt "field:product.product,explode_kit_in_contracts:"
+msgid "Explode in Contracts"
+msgstr "Expandeix als contractes"
+
+msgctxt "help:contract.line,kit_child_lines:"
+msgid "Subcomponents of the kit."
+msgstr "Components del kit."
+
+msgctxt "help:contract.line,kit_depth:"
+msgid "Depth of the line if it is part of a kit."
+msgstr "Profunditat de la línia si forma part d'un kit."
+
+msgctxt "help:contract.line,kit_parent_line:"
+msgid "The kit that contains this product."
+msgstr "El kit que conté aquest producte."
