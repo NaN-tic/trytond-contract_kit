@@ -151,7 +151,7 @@ class ContractLine:
             for lines, values in zip(actions, actions):
                 reset_kit = False
                 if ('service' in values or 'first_invoice_date' in values
-                        or 'start_date' in values or 'end_date' in values):
+                        or 'start_date' in values):
                     reset_kit = True
                 lines = lines[:]
                 if reset_kit:
