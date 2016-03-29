@@ -7,10 +7,10 @@ from trytond.pyson import Bool, Eval, Not
 
 
 __all__ = ['Product']
-__metaclass__ = PoolMeta
 
 
 class Product:
+    __metaclass__ = PoolMeta
     __name__ = 'product.product'
     explode_kit_in_contracts = fields.Boolean('Explode in Contracts',
         states={

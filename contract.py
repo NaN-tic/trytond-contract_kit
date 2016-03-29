@@ -8,10 +8,10 @@ from trytond.transaction import Transaction
 
 
 __all__ = ['ContractLine']
-__metaclass__ = PoolMeta
 
 
 class ContractLine:
+    __metaclass__ = PoolMeta
     __name__ = 'contract.line'
     kit_depth = fields.Integer('Depth', required=True,
         help='Depth of the line if it is part of a kit.')
