@@ -168,8 +168,8 @@ class ContractLine:
         if to_reset:
             cls.explode_kit(to_reset)
 
-    def get_invoice_line(self, invoice_type):
-        lines = super(ContractLine, self).get_invoice_line(invoice_type)
+    def get_invoice_line(self):
+        lines = super(ContractLine, self).get_invoice_line()
         for line in lines:
             line.sequence = self.sequence
         return lines
