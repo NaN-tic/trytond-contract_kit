@@ -84,7 +84,6 @@ class ContractLine:
                     contract_line.description = ('%s%s' %
                         ('> ' * depth, contract_line.description)
                         if contract_line.description else ' ')
-                    contract_line.first_invoice_date = line.first_invoice_date
                     contract_line.sequence = sequence
                     contract_line.kit_depth = depth
                     contract_line.kit_parent_line = line
