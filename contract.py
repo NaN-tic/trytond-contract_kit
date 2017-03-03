@@ -78,12 +78,12 @@ class ContractLine:
                     contract_line.start_date = line.start_date
                     contract_line.end_date = line.end_date
                     contract_line.description = ''
-                    contract_line.unit_price = (
-                        service.product.template.list_price)
                     contract_line.on_change_service()
                     contract_line.description = ('%s%s' %
                         ('> ' * depth, contract_line.description)
                         if contract_line.description else ' ')
+                    if line.product.kit_fixed_list_price:
+                        contract_line.unit_price = Decimal('0.0')
                     contract_line.sequence = sequence
                     contract_line.kit_depth = depth
                     contract_line.kit_parent_line = line
@@ -91,6 +91,7 @@ class ContractLine:
                     to_create.append(contract_line._save_values)
                 if not line.product.kit_fixed_list_price and line.unit_price:
                     line.unit_price = Decimal('0.0')
+                    to_write.extend(([line], line._save_values))
         if to_write:
             cls.write(*to_write)
         return super(ContractLine, cls).create(to_create)

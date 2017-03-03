@@ -1,14 +1,11 @@
-=============================
-Explode Contract Kit Scenario
-=============================
+============
+Contract Kit
+============
 
-.. Define contract with monthly periodicity
-.. Start date = Start Period Date = Invoce Date.
-.. Create Consumptions.
-..      Check consumptions dates.
-.. Create Invoice.
-..      Check Invoice Lines Amounts
-..      Check Invoice Date.
+"""
+Create a contract with monthly periodicity, kit and fixed price
+Create a contract with monthly periodicity, kit and not fixed price
+"""
 
 Imports::
     >>> import datetime
@@ -59,6 +56,11 @@ Create chart of accounts::
     >>> expense = accounts['expense']
     >>> account_tax = accounts['tax']
 
+Get Journal::
+
+    >>> Journal = Model.get('account.journal')
+    >>> journal_revenue, = Journal.find([('code', '=', 'REV')], limit=1)
+
 Create tax::
 
     >>> tax = set_tax_code(create_tax(Decimal('.10')))
@@ -74,124 +76,161 @@ Create party::
     >>> party = Party(name='Party')
     >>> party.save()
 
-Create product uom::
+Configure unit to accept decimals::
 
     >>> ProductUom = Model.get('product.uom')
     >>> unit, = ProductUom.find([('name', '=', 'Unit')])
+    >>> unit.rounding =  0.01
+    >>> unit.digits = 2
+    >>> unit.save()
 
 Create products::
 
     >>> ProductTemplate = Model.get('product.template')
     >>> Product = Model.get('product.product')
+    >>> product = Product()
+    >>> template = ProductTemplate()
+    >>> template.name = 'product'
+    >>> template.default_uom = unit
+    >>> template.type = 'service'
+    >>> template.list_price = Decimal('40')
+    >>> template.cost_price = Decimal('25')
+    >>> template.account_expense = expense
+    >>> template.account_revenue = revenue
+    >>> template.save()
+    >>> product.template = template
+    >>> product.save()
+
     >>> product1 = Product()
     >>> template1 = ProductTemplate()
     >>> template1.name = 'product1'
     >>> template1.default_uom = unit
     >>> template1.type = 'service'
-    >>> template1.list_price = Decimal('0.0')
-    >>> template1.cost_price = Decimal('0.0')
+    >>> template1.list_price = Decimal('10')
+    >>> template1.cost_price = Decimal('5')
     >>> template1.account_expense = expense
     >>> template1.account_revenue = revenue
-    >>> template1.customer_taxes.append(tax)
     >>> template1.save()
     >>> product1.template = template1
-    >>> product1.kit = False
     >>> product1.save()
+
     >>> product2 = Product()
     >>> template2 = ProductTemplate()
     >>> template2.name = 'product2'
     >>> template2.default_uom = unit
     >>> template2.type = 'service'
-    >>> template2.list_price = Decimal('0.0')
-    >>> template2.cost_price = Decimal('0.0')
+    >>> template2.list_price = Decimal('20')
+    >>> template2.cost_price = Decimal('15')
     >>> template2.account_expense = expense
     >>> template2.account_revenue = revenue
     >>> template2.save()
     >>> product2.template = template2
-    >>> product2.kit = False
     >>> product2.save()
 
 Create product kit::
 
-    >>> product_kit = Product()
-    >>> template_kit = ProductTemplate()
-    >>> template_kit.name = 'product kit'
-    >>> template_kit.default_uom = unit
-    >>> template_kit.type = 'service'
-    >>> template_kit.list_price = Decimal('40')
-    >>> template_kit.cost_price = Decimal('25')
-    >>> template_kit.account_expense = expense
-    >>> template_kit.account_revenue = revenue
-    >>> template_kit.save()
-    >>> product_kit.template = template_kit
-    >>> product_kit.kit = True
-    >>> product_kit.kit_fixed_list_price = True
-    >>> product_kit.explode_kit_in_contracts = True
-    >>> product_kit.save()
-
-Create kit lines::
-
-    >>> KitLine = Model.get('product.kit.line')
-    >>> kit_line1 = KitLine()
-    >>> kit_line1.parent = product_kit
-    >>> kit_line1.sequence = 1
-    >>> kit_line1.product = product1
-    >>> kit_line1.quantity = 1
-    >>> kit_line1.unit = unit
-    >>> kit_line1.unit_digits = 2
-    >>> kit_line1.save()
-    >>> kit_line2 = KitLine()
-    >>> kit_line2.parent = product_kit
-    >>> kit_line2.sequence = 1
-    >>> kit_line2.product = product2
-    >>> kit_line2.quantity = 1
-    >>> kit_line2.unit = unit
-    >>> kit_line2.unit_digits = 2
-    >>> kit_line2.save()
+    >>> product.kit = True
+    >>> product.kit_fixed_list_price = True
+    >>> product.explode_kit_in_contracts = True
+    >>> line = product.kit_lines.new()
+    >>> line.product = product1
+    >>> line.quantity = 1
+    >>> line.unit = unit
+    >>> line.sequence = 1
+    >>> line2 = product.kit_lines.new()
+    >>> line2.product = product2
+    >>> line2.quantity = 1
+    >>> line2.unit = unit
+    >>> line2.sequence = 2
+    >>> product.save()
 
 Create payment term::
 
     >>> PaymentTerm = Model.get('account.invoice.payment_term')
     >>> payment_term = PaymentTerm(name='Term')
-    >>> line = payment_term.lines.new(type='percent', ratio=Decimal(50))
+    >>> line = payment_term.lines.new(type='percent', ratio=Decimal('.5'))
     >>> delta = line.relativedeltas.new(days=20)
     >>> line = payment_term.lines.new(type='remainder')
     >>> delta = line.relativedeltas.new(days=40)
     >>> payment_term.save()
-    >>> party.customer_payment_term = payment_term
-    >>> party.save()
 
-Create service::
+Configuration contract::
+
+    >>> ContractConfiguration = Model.get('contract.configuration')
+    >>> configuration, = ContractConfiguration.find([])
+    >>> configuration.journal = journal_revenue
+    >>> configuration.save()
+
+Create monthly service::
 
     >>> Service = Model.get('contract.service')
-    >>> service_kit = Service()
-    >>> service_kit.name = 'Service Kit'
-    >>> service_kit.product = product_kit
-    >>> service_kit.freq = None
-    >>> service_kit.save()
     >>> service = Service()
-    >>> service.name = 'Service 1'
-    >>> service.product = product1
-    >>> service.freq = None
-    >>> service.save()
-    >>> service = Service()
-    >>> service.name = 'Service 2'
-    >>> service.product = product2
+    >>> service.name = 'Service Kit'
+    >>> service.product = product
     >>> service.freq = None
     >>> service.save()
 
+    >>> service1 = Service()
+    >>> service1.name = 'Service product1'
+    >>> service1.product = product1
+    >>> service1.freq = None
+    >>> service1.save()
 
-Create a contract::
+    >>> service2 = Service()
+    >>> service2.name = 'Service product2'
+    >>> service2.product = product2
+    >>> service2.freq = None
+    >>> service2.save()
+
+Create a contract kit and fixed price::
 
     >>> Contract = Model.get('contract')
     >>> contract = Contract()
     >>> contract.party = party
-    >>> contract.start_period_date = datetime.date(2015,01,05)
+    >>> contract.start_period_date = datetime.date(2015, 01, 01)
     >>> contract.freq = 'monthly'
-    >>> contract.first_invoice_date = datetime.date(2015,02,04)
+    >>> contract.interval = 1
+    >>> contract.first_invoice_date = datetime.date(2015, 02, 01)
     >>> line = contract.lines.new()
-    >>> line.service = service_kit
-    >>> line.start_date = datetime.date(2015,01,05)
+    >>> line.start_date = datetime.date(2015, 01, 01)
+    >>> line.service = service
+    >>> line.unit_price
+    Decimal('40')
     >>> contract.save()
     >>> len(contract.lines)
     3
+    >>> line1, line2, line3 = contract.lines
+    >>> line1.unit_price
+    Decimal('0.0')
+    >>> line2.unit_price
+    Decimal('0.0')
+    >>> line3.unit_price
+    Decimal('40')
+
+Create a contract kit and not fixed price::
+
+    >>> product.kit_fixed_list_price = False
+    >>> product.save()
+    >>> product.reload()
+
+    >>> contract = Contract()
+    >>> contract.party = party
+    >>> contract.start_period_date = datetime.date(2015, 01, 01)
+    >>> contract.freq = 'monthly'
+    >>> contract.interval = 1
+    >>> contract.first_invoice_date = datetime.date(2015, 02, 01)
+    >>> line = contract.lines.new()
+    >>> line.start_date = datetime.date(2015, 01, 01)
+    >>> line.service = service
+    >>> line.unit_price
+    Decimal('40')
+    >>> contract.save()
+    >>> len(contract.lines)
+    3
+    >>> line1, line2, line3 = contract.lines
+    >>> line1.unit_price
+    Decimal('10')
+    >>> line2.unit_price
+    Decimal('20')
+    >>> line3.unit_price
+    Decimal('0.0')
