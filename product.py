@@ -5,12 +5,11 @@ from trytond.model import fields
 from trytond.pool import PoolMeta
 from trytond.pyson import Bool, Eval, Not
 
-
 __all__ = ['Product']
-__metaclass__ = PoolMeta
 
 
 class Product:
+    __metaclass__ = PoolMeta
     __name__ = 'product.product'
     explode_kit_in_contracts = fields.Boolean('Explode in Contracts',
         states={
@@ -18,10 +17,11 @@ class Product:
             },
         depends=['kit'])
 
-    @staticmethod
-    def default_explode_kit_in_contracts():
-        return True
-
-    @staticmethod
-    def default_kit_fixed_list_price():
-        return True
+    @fields.depends('kit')
+    def on_change_kit(self):
+        if self.kit:
+            self.explode_kit_in_contracts = True
+            self.kit_fixed_list_price = True
+        else:
+            self.explode_kit_in_contracts = False
+            self.kit_fixed_list_price = False
