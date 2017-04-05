@@ -18,10 +18,9 @@ class Product:
         depends=['kit'])
 
     @fields.depends('kit')
-    def on_change_kit(self):
-        if self.kit:
-            self.explode_kit_in_contracts = True
-            self.kit_fixed_list_price = True
-        else:
-            self.explode_kit_in_contracts = False
-            self.kit_fixed_list_price = False
+    def on_change_with_explode_kit_in_contracts(self, name=None):
+        return True if self.kit else False
+
+    @fields.depends('kit')
+    def on_change_with_kit_fixed_list_price(self, name=None):
+        return True if self.kit else False
